@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">PKRunner</string>
+    <string name="instruction">
+        PkRunner 2020 takes place in the fictional world of System Seven, where human consciousness is
+        uploaded into a super computer known as HAL. Most in the digital world are unaware of their
+        reality. Pk, the player character, has taken it upon himself to make it to the deepest levels
+        of the program in order to destory HAL. In the bottom left screen will be have left and right
+        arrows for PK to move left or right and in the right bottom screen will be an up arrow helping
+        PK to move up. In addition, I want to thank Mannyboy who develop the game, Otis who made the
+        music, and Adrian who design the UI for the game.
+    </string>
 </resources>
