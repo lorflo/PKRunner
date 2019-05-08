@@ -16,7 +16,7 @@ public class gamePlayScene implements Scene
     private Point playerPoint;
     private ObstacleManager manager;
     private boolean movingPlayer = false;
-    private boolean gameOver = false;
+    private boolean gameOver = false,gameWon = false;
     private long gameOverTime = 0;
     private Rect floor, ceiling,leftB, rightB,jumpB;
     private Rect r = new Rect();
@@ -69,15 +69,17 @@ public class gamePlayScene implements Scene
         {
                 case MotionEvent.ACTION_DOWN:
                     //checks to see if the game is not over and a button is being pressed
-                    if (!gameOver && leftB.contains((int) event.getX(), (int) event.getY()) || rightB.contains((int) event.getX(), (int) event.getY())) {
+                    if (!gameOver && leftB.contains((int) event.getX(), (int) event.getY())
+                            || rightB.contains((int) event.getX(), (int) event.getY())) {
                         if (leftB.contains((int) event.getX(), (int) event.getY()))//left button is pressed
                             direction = 'l';
                         if (rightB.contains((int) event.getX(), (int) event.getY()))//right button is pressed
                             direction = 'r';
-                        if (gameOver && System.currentTimeMillis() - gameOverTime >= 2000)//waits for two seconds
-                        {                                                                // before user can resume playing after game over
+                        if (gameOver || gameWon && System.currentTimeMillis() - gameOverTime >= 2000)//waits for two seconds
+                        {                                                                // before user can resume playing after game won/over
                             reset();
                             gameOver = false;
+                            gameWon = false;
                         }
                     }
                 case MotionEvent.ACTION_POINTER_DOWN://when screen is pressed down on
@@ -95,34 +97,58 @@ public class gamePlayScene implements Scene
     @Override
     public void update()
     {
-        if(!gameOver)
+        if(!gameOver && !gameWon)
         {
+            if(manager.playerScored(player))
+            {
+                score++;
+                if(score > totalScore)
+                    totalScore++;
+                if(score > 100)
+                {
+                    //intenet back to start;
+                    gameWon = true;
+                }
+            }
+
             player.update(direction, playerPoint);
             manager.update();
         }
         if(manager.playerCollide(player))
         {
             gameOver = true;
+
             if(gameOverTime != 0)
                 return;
             else
                 gameOverTime = System.currentTimeMillis();
         }
-        if(manager.playerScored(player))
+        if(gameWon)
         {
-            if(!gameOver)
-            score++;
+            if(gameOverTime != 0)
+                return;
+            else
+                gameOverTime = System.currentTimeMillis();
         }
+
     }
 
     @Override
     public void draw(Canvas canvas)
     {
-        totalScore = score;
-        if(score > 100)
+
+        if(score > 20)
         {
-            level++;
-            score = 0;
+            if(level == colors.length-1)
+            {
+                level = 0;
+            }
+            else
+                {
+                    level++;
+                    score =0;
+                }
+
         }
         canvas.drawColor(colors[level]);//the background
         manager.draw(canvas);//the obstacles
@@ -135,19 +161,33 @@ public class gamePlayScene implements Scene
         canvas.drawRect(ceiling,paint);//the ceiling
 
 
-        paint.setColor(Color.BLUE);
+
         canvas.drawBitmap(leftArrow,null,leftB,new Paint());//left button
         canvas.drawBitmap(rightArrow,null,rightB,new Paint());//right button
         canvas.drawBitmap(jumpArrow,null,jumpB,new Paint());
         paint.setTextSize(100);
-        canvas.drawText(String.valueOf(score),200,200,paint);
+        paint.setColor(Color.YELLOW);
+        if(!gameOver && !gameWon)
+            canvas.drawText(String.valueOf(score),1500,200,paint);
 
         if(gameOver)//shows game over in middle of screen
         {
             paint.setTextSize(100);
             paint.setColor(Color.RED);
             drawTextCenter(canvas,paint,"Game Over:press right arrow to continue");
-            canvas.drawText(String.valueOf(totalScore),200,200,paint);
+            canvas.drawText(String.valueOf("High Score:" + totalScore),1500,200,paint);
+        }
+        if(gameWon)//shows game over in middle of screen
+        {
+            paint.setTextSize(100);
+            paint.setColor(Color.BLACK);
+            drawTextCenter(canvas,paint,"You Win!");
+            canvas.drawText(String.valueOf(totalScore),1500,201,paint);
+
+            paint.setColor(Color.YELLOW);
+            drawTextCenter(canvas,paint,"You Win!");
+            canvas.drawText(String.valueOf(totalScore),1500,200,paint);
+
         }
     }
 
